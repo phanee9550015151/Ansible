@@ -1,0 +1,42 @@
+- hosts: jenkins
+  become: yes
+  tasks:
+    - name: Install Java (required for Jenkins) using IPv4
+      apt:
+        name: openjdk-11-jdk
+        state: present
+        force_apt_get: yes
+      environment:
+        APT_CONFIG: /etc/apt/apt.conf.d/99force-ipv4
+
+    - name: Add Jenkins repo key
+      apt_key:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+        state: present
+
+    - name: Add Jenkins repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://pkg.jenkins.io/debian-stable binary/"
+        state: present
+        filename: jenkins
+
+    - name: Update apt packages after adding Jenkins repo (IPv4)
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+      environment:
+        APT_CONFIG: /etc/apt/apt.conf.d/99force-ipv4
+
+    - name: Install Jenkins (IPv4)
+      apt:
+        name: jenkins
+        state: present
+        force_apt_get: yes
+      environment:
+        APT_CONFIG: /etc/apt/apt.conf.d/99force-ipv4
+
+    - name: Start Jenkins service
+      service:
+        name: jenkins
+        state: started
+        enabled: yes
